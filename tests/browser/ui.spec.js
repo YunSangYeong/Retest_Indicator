@@ -71,6 +71,15 @@ for (const viewport of [
     await expect(
       page.getByRole("link", { name: "TradingView 차트" }),
     ).toHaveAttribute("href", /BYBIT%3ATESTUSDT.P/);
+    await expect(
+      page.locator("#entries dt").filter({ hasText: /^목표$/ }),
+    ).toHaveCount(1);
+    await expect(
+      page.locator("#entries dt").filter({ hasText: /1차|2차/ }),
+    ).toHaveCount(0);
+    await page.locator("#rr").selectOption("2");
+    await expect(page.locator(".card")).toHaveCount(0);
+    await page.locator("#rr").selectOption("0");
     const chart = page.locator("#entries .chart-canvas");
     await chart.scrollIntoViewIfNeeded();
     await expect(chart).toHaveAttribute("data-ready", "true");

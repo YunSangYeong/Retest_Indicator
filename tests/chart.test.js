@@ -16,7 +16,7 @@ test("chart uses exact snapshot bar open times, including retest and entry on sa
     retestIndex: 2,
     entryIndex: 2,
     chart: { bars, interval: "15" },
-    plan: { entry: 102, stop: 98, target1: null, target2: 110 },
+    plan: { entry: 102, stop: 98, target: 110 },
   });
   assert.equal(model.candles.length, 4);
   assert.deepEqual(
@@ -29,7 +29,7 @@ test("chart uses exact snapshot bar open times, including retest and entry on sa
   );
   assert.deepEqual(
     model.levels.map((l) => l.title),
-    ["SR", "진입", "손절", "목표 2"],
+    ["SR", "진입", "손절", "목표"],
   );
 });
 test("pending SHORT displays only breakout and SR without invented retest or plan", () => {

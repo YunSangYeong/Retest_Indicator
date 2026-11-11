@@ -50,10 +50,8 @@ function card(p) {
     ["거래량", p.volumeMultiple.toFixed(2) + "×"],
     ["진입가", plan.entry ? num(plan.entry) : "대기"],
     ["손절가", plan.entry ? num(plan.stop) : "—"],
-    ["1차 목표", plan.entry ? num(plan.target1) : "—"],
-    ["1차 손익비", plan.rr1 ? `1:${plan.rr1.toFixed(2)}` : "—"],
-    ["2차 목표", plan.entry ? num(plan.target2) : "—"],
-    ["2차 손익비", plan.rr2 ? `1:${plan.rr2.toFixed(2)}` : "—"],
+    ["목표", plan.entry ? num(plan.target) : "—"],
+    ["손익비", plan.rr ? `1:${plan.rr.toFixed(2)}` : "—"],
     ["돌파", time(p.breakoutTime)],
     ["리테스트", time(p.retestTime)],
     ["진입 확정", time(p.entryTime)],
@@ -111,7 +109,7 @@ function render() {
           (state === "ENTRY"
             ? p.state.startsWith("ENTRY")
             : p.state === state)) &&
-        (!rr || Math.max(p.plan?.rr1 || 0, p.plan?.rr2 || 0) >= rr),
+        (!rr || (p.plan?.rr || 0) >= rr),
     )
     .sort(
       (a, b) =>

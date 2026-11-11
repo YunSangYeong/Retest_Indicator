@@ -57,8 +57,7 @@ export function chartModel(pattern) {
     { title: "SR", price: pattern.sr, color: "#f5c76b" },
     { title: "진입", price: plan.entry, color: "#62e6bd" },
     { title: "손절", price: plan.stop, color: "#ff8797" },
-    { title: "목표 1", price: plan.target1, color: "#87baff" },
-    { title: "목표 2", price: plan.target2, color: "#bca1ff" },
+    { title: "목표", price: plan.target, color: "#bca1ff" },
   ].filter((l) => Number.isFinite(l.price));
   return {
     candles: bars.map((b) => ({

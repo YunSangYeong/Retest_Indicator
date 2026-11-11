@@ -90,7 +90,7 @@ test("LONG retest with confirmation on same closed bar", () => {
   assert.equal(p.state, "ENTRY_LONG");
   assert.equal(p.entryTime, 102 * step);
   assert.equal(p.retestIndex, 101);
-  assert.equal(p.plan.target1, null);
+  assert.equal(p.plan.target, null);
 });
 test("SHORT retest", () => {
   const b = add(fixture(true), 99.9, 100.1, 97, 97.2);
@@ -134,7 +134,7 @@ test("causal prefix invariance with later data and wider lookback", () => {
   assert.equal(after.boxHeight, p.boxHeight);
   assert.equal(scan(b, { lookback: 150 }).patterns.length, 0);
 });
-test("trade plan excludes retest high, validates RR and mirrored SHORT", () => {
+test("box target and RR with missing box and mirrored SHORT", () => {
   const b = fixture();
   add(b, 102, 105, 101, 104);
   add(b, 100, 101, 99.8, 100.8);
@@ -146,12 +146,16 @@ test("trade plan excludes retest high, validates RR and mirrored SHORT", () => {
     boxHeight: 10,
   };
   const plan = tradePlan(p, b, 102, 2);
-  assert.equal(plan.target1, 105);
-  assert.equal(plan.target2, 110);
+  assert.equal(plan.target, 110);
   assert.equal(plan.stop, 99.39999999999999);
-  assert.ok(Math.abs(plan.rr1 - 3) < 1e-10);
+  assert.ok(Math.abs(plan.rr - (110 - 100.8) / (100.8 - plan.stop)) < 1e-10);
+  assert.equal(Object.hasOwn(plan, "target1"), false);
+  assert.equal(Object.hasOwn(plan, "rr1"), false);
   p.boxHeight = null;
-  assert.equal(tradePlan(p, b, 102, 2).target2, null);
+  const noBox = tradePlan(p, b, 102, 2);
+  assert.equal(noBox.target, null);
+  assert.equal(noBox.rr, null);
+  assert.equal(tradePlan({ ...p, boxHeight: 0.5 }, b, 102, 2).target, null);
   const inverse = b.map((c) => ({
     ...c,
     open: 200 - c.open,
@@ -165,5 +169,5 @@ test("trade plan excludes retest high, validates RR and mirrored SHORT", () => {
     102,
     2,
   );
-  assert.ok(Math.abs(s.rr1 - plan.rr1) < 1e-10);
+  assert.ok(Math.abs(s.rr - plan.rr) < 1e-10);
 });

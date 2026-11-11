@@ -85,26 +85,21 @@ export function tradePlan(pattern, bars, index, atr) {
   const stop = long
     ? Math.min(extreme, sr - 0.2 * atr) - 0.1 * atr
     : Math.max(extreme, sr + 0.2 * atr) + 0.1 * atr;
-  // Exclude retest and confirmation bars: their intrabar price sequence is unknown.
-  const before = bars.slice(pattern.breakoutIndex, pattern.retestIndex);
-  const raw1 = long
-    ? Math.max(...before.map((b) => b.high))
-    : Math.min(...before.map((b) => b.low));
-  const raw2 = pattern.boxHeight ? sr + sign * pattern.boxHeight : null;
-  const risk = sign * (entry - stop),
-    target = (t) =>
-      t !== null && Number.isFinite(t) && sign * (t - entry) > 0 && risk > 0
-        ? t
-        : null;
-  const target1 = target(raw1),
-    target2 = target(raw2);
+  // The only target projects the box height confirmed before breakout.
+  const rawTarget = pattern.boxHeight ? sr + sign * pattern.boxHeight : null;
+  const risk = sign * (entry - stop);
+  const target =
+    rawTarget !== null &&
+    Number.isFinite(rawTarget) &&
+    sign * (rawTarget - entry) > 0 &&
+    risk > 0
+      ? rawTarget
+      : null;
   return {
     entry,
     stop: risk > 0 ? stop : null,
-    target1,
-    target2,
-    rr1: target1 === null ? null : (sign * (target1 - entry)) / risk,
-    rr2: target2 === null ? null : (sign * (target2 - entry)) / risk,
+    target,
+    rr: target === null ? null : (sign * (target - entry)) / risk,
   };
 }
 export function scanPatterns(input, options = {}, now = Date.now()) {
