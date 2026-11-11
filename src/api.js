@@ -171,6 +171,7 @@ export async function scanMarket(
         const patterns = [...scan.entries, ...scan.active];
         for (const p of patterns) {
           p.symbol = symbol;
+          p.chart = { bars: scan.bars, interval: cfg.interval };
           p.oi = await client.oi(symbol, p, cfg, signal);
         }
         results.push(...patterns);

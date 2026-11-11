@@ -311,3 +311,33 @@ footer {
     font-size: 10px;
   }
 }
+
+.inline-chart {
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid #2b384d;
+  min-width: 0;
+}
+.inline-chart h4 {
+  font-size: 12px;
+  margin: 0 0 10px;
+  color: #dbe4f1;
+}
+.chart-legend,
+.chart-summary {
+  font-size: 10px;
+  color: #9eafc6;
+  line-height: 1.6;
+}
+.chart-canvas {
+  height: 300px;
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid #243247;
+  border-radius: 8px;
+}
+.chart-credit {
+  font-size: 9px;
+  color: #8292ab;
+}

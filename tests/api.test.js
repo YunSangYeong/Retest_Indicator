@@ -173,3 +173,20 @@ test("request timeout aborts underlying fetch and reports failure", async () => 
   });
   await assert.rejects(c.get("/slow", {}), { name: "TimeoutError" });
 });
+
+test("chart snapshot reuses analyzed closed candles and scan interval", async () => {
+  const bars = [
+    { time: 1700000000000, open: 1, high: 2, low: 0.5, close: 1.5 },
+  ];
+  const client = { candles: async () => bars, oi: async () => null };
+  const result = await scanMarket(
+    ["TESTUSDT"],
+    client,
+    { ...defaults, interval: "60" },
+    {
+      analyze: () => ({ bars, active: [{ state: "BREAKOUT" }], entries: [] }),
+    },
+  );
+  assert.equal(result.results[0].chart.bars, bars);
+  assert.equal(result.results[0].chart.interval, "60");
+});

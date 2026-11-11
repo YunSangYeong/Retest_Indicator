@@ -1,3 +1,4 @@
+import { inlineChart } from "./chart.js";
 import { defaults, scanPatterns } from "./strategy.js";
 import { BybitClient, scanMarket } from "./api.js";
 const $ = (id) => document.getElementById(id);
@@ -18,6 +19,7 @@ const num = (n) =>
   n === null || n === undefined
     ? "계산 불가"
     : Number(n).toLocaleString("en-US", { maximumSignificantDigits: 7 });
+let chartDisposers = [];
 const priority = {
   ENTRY_LONG: 0,
   ENTRY_SHORT: 0,
@@ -92,9 +94,14 @@ function card(p) {
   a.target = "_blank";
   a.rel = "noopener noreferrer";
   el.append(a);
+  const chart = inlineChart(p);
+  el.append(chart.element);
+  chartDisposers.push(chart.dispose);
   return el;
 }
 function render() {
+  chartDisposers.forEach((dispose) => dispose());
+  chartDisposers = [];
   const state = $("state").value,
     rr = +$("rr").value;
   const visible = results

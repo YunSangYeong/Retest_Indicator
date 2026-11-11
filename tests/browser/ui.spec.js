@@ -71,10 +71,26 @@ for (const viewport of [
     await expect(
       page.getByRole("link", { name: "TradingView 차트" }),
     ).toHaveAttribute("href", /BYBIT%3ATESTUSDT.P/);
+    const chart = page.locator("#entries .chart-canvas");
+    await chart.scrollIntoViewIfNeeded();
+    await expect(chart).toHaveAttribute("data-ready", "true");
+    await expect(chart.locator("canvas").first()).toBeVisible();
+    await expect(page.locator("#entries .chart-legend")).toContainText(
+      "리테스트",
+    );
+    await page.screenshot({
+      path: `test-results/inline-chart-${viewport.width}.png`,
+      fullPage: true,
+    });
     await page.locator("#state").selectOption("WAIT_RETEST");
     await expect(page.locator(".card")).toHaveCount(0);
     await page.locator("#state").selectOption("ALL");
     await expect(page.locator(".card")).toHaveCount(1);
+    await page.locator("#entries .chart-canvas").scrollIntoViewIfNeeded();
+    await expect(page.locator("#entries .chart-canvas")).toHaveAttribute(
+      "data-ready",
+      "true",
+    );
     expect(
       await page.evaluate(
         () => document.documentElement.scrollWidth <= innerWidth,
