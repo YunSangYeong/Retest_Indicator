@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#0b1019" />
+    <title>SR Flip Scanner · Bybit</title>
+    <link rel="stylesheet" href="./src/style.css" />
+  </head>
+  <body>
+    <main>
+      <header>
+        <div>
+          <span class="eyebrow">BYBIT MARKET INTELLIGENCE / V1.0</span>
+          <h1>SR Flip <em>Scanner</em></h1>
+          <p>돌파를 발견하고, 리테스트를 확인하세요.</p>
+        </div>
+        <span class="market">● USDT 무기한 선물</span>
+      </header>
+      <section class="panel">
+        <div class="section-title">
+          <h2>시장 스캔</h2>
+          <span>확정봉 기준 · 수동 검색</span>
+        </div>
+        <form id="settings">
+          <div class="fields">
+            <label
+              >시간봉<select name="interval">
+                <option value="15">15분</option>
+                <option value="60">1시간</option>
+              </select></label
+            ><label
+              >방향<select name="direction">
+                <option>ALL</option>
+                <option>LONG</option>
+                <option>SHORT</option>
+              </select></label
+            ><label
+              >SR 탐색 봉 수<input
+                name="lookback"
+                type="number"
+                value="100"
+                min="20"
+                max="500"
+                required /></label
+            ><label
+              >돌파 거래량 배수<input
+                name="volumeMultiple"
+                type="number"
+                value="2"
+                min="1"
+                max="20"
+                step="0.1"
+                required /></label
+            ><label
+              >리테스트 허용 봉<input
+                name="retestBars"
+                type="number"
+                value="12"
+                min="1"
+                max="100"
+                required /></label
+            ><label
+              >최소 거래대금 (USDT)<input
+                name="turnover"
+                type="number"
+                value="10000000"
+                min="0"
+                required
+            /></label>
+          </div>
+          <details>
+            <summary>세부 탐지 설정</summary>
+            <div class="fields">
+              <label
+                >피벗 좌·우 봉<input
+                  name="pivot"
+                  type="number"
+                  value="3"
+                  min="1"
+                  max="10"
+                  required /></label
+              ><label
+                >최소 접촉 횟수<input
+                  name="touches"
+                  type="number"
+                  value="2"
+                  min="2"
+                  max="10"
+                  required /></label
+              ><label
+                >피벗 최소 간격<input
+                  name="spacing"
+                  type="number"
+                  value="3"
+                  min="1"
+                  max="20"
+                  required /></label
+              ><label
+                >거래량 평균 봉<input
+                  name="volumePeriod"
+                  type="number"
+                  value="20"
+                  min="2"
+                  max="100"
+                  required /></label
+              ><label
+                >최근 진입 검색 봉<input
+                  name="recentBars"
+                  type="number"
+                  value="10"
+                  min="1"
+                  max="100"
+                  required
+              /></label>
+            </div>
+          </details>
+          <div class="actions">
+            <button type="submit" id="scan">검색 시작 ↗</button
+            ><button type="button" id="cancel" disabled>검색 취소</button
+            ><label
+              ><input type="checkbox" id="use-oi" checked /> OI 보조 분석</label
+            >
+          </div>
+        </form>
+      </section>
+      <section class="panel progress-panel" aria-live="polite">
+        <div id="status">검색 준비 완료</div>
+        <progress id="progress" max="1" value="0"></progress>
+        <div id="stats">전체 0 · 완료 0 · 성공 0 · 실패 0 · 조건 충족 0</div>
+        <small id="last">마지막 검색 —</small>
+        <div id="error" role="alert"></div>
+        <details id="failures" hidden>
+          <summary>실패 종목 상세</summary>
+          <pre></pre>
+        </details>
+      </section>
+      <section>
+        <div class="results-heading">
+          <h2>탐지 결과 <span id="count">0</span></h2>
+          <div class="filters">
+            <label
+              >상태
+              <select id="state">
+                <option value="ALL">전체</option>
+                <option value="ENTRY">진입 확정</option>
+                <option>RETESTING</option>
+                <option>WAIT_RETEST</option>
+                <option>BREAKOUT</option>
+              </select></label
+            ><label
+              >최소 손익비
+              <select id="rr">
+                <option value="0">전체</option>
+                <option value="2">1:2 이상</option>
+                <option value="3">1:3 이상</option>
+                <option value="5">1:5 이상</option>
+              </select></label
+            >
+          </div>
+        </div>
+        <h3>최근 진입 신호</h3>
+        <div id="entries" class="cards"></div>
+        <h3>진행 중인 패턴</h3>
+        <div id="active" class="cards"></div>
+      </section>
+      <footer>
+        수동매매 판단을 돕는 스캐너입니다. 손익비는 수수료·펀딩비·슬리피지를
+        제외한 예상 수치입니다.<br />OI 증가는 신규 롱 유입을 의미하지 않습니다.
+        데이터 출처: Bybit V5 공개 API.
+      </footer>
+    </main>
+    <script type="module" src="./src/main.js"></script>
+  </body>
+</html>
