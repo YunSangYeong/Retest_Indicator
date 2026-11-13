@@ -80,7 +80,7 @@ VITE_BYBIT_API_BASE=https://your-owned-proxy.example npm run build
 
 ### 탐색 시장 필터
 
-시장 스캔에서 **코인만 / 주식만 / 전체**를 선택한 뒤 검색합니다. 기본값은 기존 검색 범위를 유지하는 **전체**입니다. 시장 선택 변경은 다음 검색에 적용됩니다.
+시장 스캔에서 **코인만 / 주식만 / 전체**를 선택한 뒤 검색합니다. 기본값은 **코인만**입니다. 시장 선택 변경은 다음 검색에 적용됩니다.
 
 [bybit-wave-scanner](https://yunsangyeong.github.io/bybit-wave-scanner/) 원본의 `src/market.ts`, `src/api.ts`를 확인해 같은 분류 기준을 적용했습니다. Bybit `/v5/market/instruments-info?category=linear&limit=1000`의 모든 페이지를 조회하고 공식 `symbolType`으로 캔들 조회 전에 필터링합니다.
 

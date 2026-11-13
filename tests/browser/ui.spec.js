@@ -40,6 +40,7 @@ async function mock(page) {
           list: [
             {
               symbol: "TESTUSDT",
+              symbolType: "",
               status: "Trading",
               contractType: "LinearPerpetual",
               quoteCoin: "USDT",
@@ -160,7 +161,7 @@ for (const width of [1440, 390])
     });
     await page.goto("/");
     const market = page.getByRole("combobox", { name: /^탐색 시장/ });
-    await expect(market).toHaveValue("all");
+    await expect(market).toHaveValue("crypto");
     for (const [selection, expected] of [
       ["stock", ["AAPLUSDT"]],
       ["crypto", ["BTCUSDT", "NEWUSDT"]],
