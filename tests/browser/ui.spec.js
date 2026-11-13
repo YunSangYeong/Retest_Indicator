@@ -179,3 +179,37 @@ for (const width of [1440, 390])
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBeTruthy();
     await page.screenshot({ path: `test-results/market-${width}.png`, fullPage: true });
   });
+
+test("one symbol appears once across sections and stays unique after filter changes", async ({ page }) => {
+  await mock(page);
+  // Supply multiple engine patterns for one symbol to exercise the real UI selector.
+  await page.route("**/src/strategy.js", route => route.fulfill({
+    contentType: "text/javascript",
+    body: `export const defaults = {};
+      export function scanPatterns() {
+        const base = { direction: 'LONG', sr: 100, volumeMultiple: 2,
+          breakoutTime: 1700000000000, stateTime: 1700000000000, history: [] };
+        return { bars: [], entries: [
+          { ...base, state: 'ENTRY_LONG', entryTime: 1700000001000, plan: { entry: 101, stop: 99, target: 105, rr: 2 } },
+          { ...base, direction: 'SHORT', state: 'ENTRY_SHORT', entryTime: 1700000002000, plan: { entry: 99, stop: 101, target: 97, rr: 1 } }
+        ], active: [{ ...base, state: 'WAIT_RETEST' }, { ...base, state: 'RETESTING' }] };
+      }`,
+  }));
+  await page.goto("/");
+  await page.locator("#scan").click();
+  await expect(page.locator("#status")).toHaveText("검색 완료");
+  await expect(page.locator(".card")).toHaveCount(1);
+  await expect(page.locator("#count")).toHaveText("1");
+  await expect(page.locator("#entries .state")).toHaveText("ENTRY_SHORT");
+  await page.locator("#rr").selectOption("2");
+  await expect(page.locator(".card")).toHaveCount(1);
+  await expect(page.locator("#entries .state")).toHaveText("ENTRY_LONG");
+  await page.locator("#rr").selectOption("0");
+  await page.locator("#state").selectOption("WAIT_RETEST");
+  await expect(page.locator("#entries .card")).toHaveCount(0);
+  await expect(page.locator("#active .card")).toHaveCount(1);
+  await expect(page.locator("#count")).toHaveText("1");
+  await page.locator("#state").selectOption("ALL");
+  await expect(page.locator(".card")).toHaveCount(1);
+  await expect(page.locator("#entries .state")).toHaveText("ENTRY_SHORT");
+});

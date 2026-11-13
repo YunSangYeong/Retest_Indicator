@@ -1,3 +1,4 @@
+import { visiblePatterns } from "./results.js";
 import { inlineChart } from "./chart.js";
 import { defaults, scanPatterns } from "./strategy.js";
 import { BybitClient, scanMarket } from "./api.js";
@@ -20,13 +21,6 @@ const num = (n) =>
     ? "계산 불가"
     : Number(n).toLocaleString("en-US", { maximumSignificantDigits: 7 });
 let chartDisposers = [];
-const priority = {
-  ENTRY_LONG: 0,
-  ENTRY_SHORT: 0,
-  RETESTING: 1,
-  WAIT_RETEST: 2,
-  BREAKOUT: 3,
-};
 function card(p) {
   const el = document.createElement("article");
   el.className = "card";
@@ -102,20 +96,7 @@ function render() {
   chartDisposers = [];
   const state = $("state").value,
     rr = +$("rr").value;
-  const visible = results
-    .filter(
-      (p) =>
-        (state === "ALL" ||
-          (state === "ENTRY"
-            ? p.state.startsWith("ENTRY")
-            : p.state === state)) &&
-        (!rr || (p.plan?.rr || 0) >= rr),
-    )
-    .sort(
-      (a, b) =>
-        priority[a.state] - priority[b.state] ||
-        (b.entryTime || b.stateTime) - (a.entryTime || a.stateTime),
-    );
+  const visible = visiblePatterns(results, { state, rr });
   $("count").textContent = visible.length;
   for (const [id, entry] of [
     ["entries", true],
