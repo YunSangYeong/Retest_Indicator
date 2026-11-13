@@ -25,6 +25,12 @@
         <form id="settings">
           <div class="fields">
             <label
+              >탐색 시장<select name="market" aria-describedby="market-help">
+                <option value="crypto">코인만</option>
+                <option value="stock">주식만</option>
+                <option value="all" selected>전체</option>
+              </select></label
+            ><label
               >시간봉<select name="interval">
                 <option value="15">15분</option>
                 <option value="60">1시간</option>
@@ -69,6 +75,7 @@
                 required
             /></label>
           </div>
+          <p id="market-help">주식만은 개별 주식 기반 무기한 선물입니다. ETF·원자재·외환·미분류 종목은 전체에만 포함됩니다. 시장 선택은 다음 검색부터 적용됩니다.</p>
           <details>
             <summary>세부 탐지 설정</summary>
             <div class="fields">

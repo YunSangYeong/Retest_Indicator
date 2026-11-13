@@ -190,3 +190,43 @@ test("chart snapshot reuses analyzed closed candles and scan interval", async ()
   assert.equal(result.results[0].chart.bars, bars);
   assert.equal(result.results[0].chart.interval, "60");
 });
+
+test("market selection uses official types across pages before candle requests", async () => {
+  const types = ["", "innovation", "stock", "ETF", "commodity", "forex", "unknown", undefined];
+  const instruments = types.map((symbolType, index) => ({
+    symbol: `ASSET${index}USDT`, symbolType, status: "Trading",
+    contractType: "LinearPerpetual", quoteCoin: "USDT", settleCoin: "USDT",
+  }));
+  const extra = [
+    { ...instruments[2], symbol: "LOWUSDT" },
+    { ...instruments[2], symbol: "CLOSEDUSDT", status: "Settling" },
+    { ...instruments[2], symbol: "FUTUREUSDT", contractType: "LinearFutures" },
+    { ...instruments[2], symbol: "USDC", quoteCoin: "USDC", settleCoin: "USDC" },
+    { ...instruments[2], symbol: "BADSETTLEUSDT", settleCoin: "USDC" },
+  ];
+  for (const [market, expected] of [
+    ["crypto", ["ASSET0USDT", "ASSET1USDT"]],
+    ["stock", ["ASSET2USDT"]],
+    ["all", instruments.map(i => i.symbol)],
+  ]) {
+    const pages = [], candleRequests = [], progress = [];
+    const client = new BybitClient({ fetcher: async raw => {
+      const url = new URL(raw);
+      if (url.pathname.endsWith("tickers")) return response({ list: [...instruments, ...extra].map(i => ({ symbol: i.symbol, turnover24h: i.symbol === "LOWUSDT" ? "1" : "10000000" })) });
+      pages.push(url.searchParams.get("cursor"));
+      return response(url.searchParams.has("cursor")
+        ? { list: [...instruments.slice(2), ...extra, instruments[0]], nextPageCursor: "" }
+        : { list: instruments.slice(0, 2), nextPageCursor: "next" });
+    }});
+    const symbols = await client.symbols(1e7, undefined, market);
+    assert.deepEqual(symbols, expected);
+    assert.deepEqual(pages, [null, "next"]);
+    client.candles = async symbol => { candleRequests.push(symbol); return []; };
+    await scanMarket(symbols, client, defaults, {
+      analyze: () => ({ active: [], entries: [] }),
+      onProgress: p => progress.push(p),
+    });
+    assert.deepEqual(candleRequests.sort(), expected);
+    assert.equal(progress.at(-1).total, expected.length);
+  }
+});

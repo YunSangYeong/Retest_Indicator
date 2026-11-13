@@ -77,3 +77,15 @@ VITE_BYBIT_API_BASE=https://your-owned-proxy.example npm run build
 - 차트 시간축은 **봉 시작 시각(KST)**, 카드의 신호 시각은 **봉 마감 시각(KST)**입니다. 예를 들어 15분봉의 10:00 캔들에서 확정한 신호는 카드에서 10:15로 표시됩니다.
 - 드래그 이동 및 확대·축소를 지원합니다. 기존 외부 TradingView 차트 링크도 그대로 유지합니다.
 - 차트는 TradingView Lightweight Charts™(Apache-2.0)를 사용하며 앱 번들에 포함됩니다. 차트 라이브러리용 외부 CDN 요청은 없습니다. 배포에 라이선스 사본(`public/third-party/`)과 출처 표시를 포함합니다.
+
+### 탐색 시장 필터
+
+시장 스캔에서 **코인만 / 주식만 / 전체**를 선택한 뒤 검색합니다. 기본값은 기존 검색 범위를 유지하는 **전체**입니다. 시장 선택 변경은 다음 검색에 적용됩니다.
+
+[bybit-wave-scanner](https://yunsangyeong.github.io/bybit-wave-scanner/) 원본의 `src/market.ts`, `src/api.ts`를 확인해 같은 분류 기준을 적용했습니다. Bybit `/v5/market/instruments-info?category=linear&limit=1000`의 모든 페이지를 조회하고 공식 `symbolType`으로 캔들 조회 전에 필터링합니다.
+
+- 코인만: `symbolType=""` 또는 `innovation`.
+- 주식만: `symbolType="stock"`인 개별 주식 기반 무기한 선물.
+- 전체: ETF·원자재·외환·알 수 없거나 누락된 분류까지 포함.
+
+종목명으로 분류를 추측하지 않습니다. 기존 Trading / LinearPerpetual / USDT 호가·결제 조건과 24시간 최소 거래대금 조건, 캔들 페이지네이션·확정봉 분석·OI·취소·차트·결과 필터는 유지합니다. 진행 통계는 선택한 시장에서 실제 조회하는 종목만 집계합니다. 일반 현물 주식이나 별도 주식 거래소를 조회하는 기능은 아닙니다.

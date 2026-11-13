@@ -132,3 +132,49 @@ test("network failure is visible", async ({ page }) => {
     timeout: 15000,
   });
 });
+
+for (const width of [1440, 390])
+  test(`market selection limits requests and replaces results at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 1000 });
+    const assets = [
+      ["BTCUSDT", ""], ["NEWUSDT", "innovation"], ["AAPLUSDT", "stock"],
+      ["ETFUSDT", "ETF"], ["GOLDUSDT", "commodity"], ["EURUSDT", "forex"],
+      ["UNKNOWNUSDT", "new-type"], ["MISSINGUSDT", undefined],
+    ];
+    const requested = new Set();
+    await page.route("https://api.bybit.com/**", async route => {
+      const url = new URL(route.request().url());
+      let result;
+      if (url.pathname.endsWith("instruments-info")) {
+        const second = url.searchParams.has("cursor");
+        result = {
+          list: (second ? assets.slice(2) : assets.slice(0, 2)).map(([symbol, symbolType]) => ({
+            symbol, symbolType, status: "Trading", contractType: "LinearPerpetual", quoteCoin: "USDT", settleCoin: "USDT",
+          })), nextPageCursor: second ? "" : "page2",
+        };
+      } else if (url.pathname.endsWith("tickers")) {
+        result = { list: assets.map(([symbol]) => ({ symbol, turnover24h: "12000000" })) };
+      } else if (url.pathname.endsWith("open-interest")) result = { list: [] };
+      else { requested.add(url.searchParams.get("symbol")); result = { list: candles() }; }
+      await route.fulfill({ json: { retCode: 0, result } });
+    });
+    await page.goto("/");
+    const market = page.getByRole("combobox", { name: /^탐색 시장/ });
+    await expect(market).toHaveValue("all");
+    for (const [selection, expected] of [
+      ["stock", ["AAPLUSDT"]],
+      ["crypto", ["BTCUSDT", "NEWUSDT"]],
+      ["all", assets.map(([symbol]) => symbol)],
+    ]) {
+      requested.clear();
+      await market.selectOption(selection);
+      await page.locator("#scan").click();
+      await expect(page.locator("#status")).toHaveText("검색 완료");
+      expect([...requested].sort()).toEqual([...expected].sort());
+      await expect(page.locator("#stats")).toContainText(`전체 ${expected.length} · 완료 ${expected.length} · 성공 ${expected.length}`);
+      await expect(page.locator("#entries .card")).toHaveCount(expected.length);
+      expect(await page.locator("#entries h3").allTextContents()).toEqual(expect.arrayContaining(expected));
+    }
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBeTruthy();
+    await page.screenshot({ path: `test-results/market-${width}.png`, fullPage: true });
+  });

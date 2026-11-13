@@ -1,3 +1,11 @@
+// Match the reference scanner's explicit Bybit symbolType classification.
+export function matchesMarket(symbolType, market) {
+  if (market === "all") return true;
+  if (market === "stock") return symbolType === "stock";
+  if (market === "crypto") return symbolType === "" || symbolType === "innovation";
+  throw new Error("지원하지 않는 탐색 시장");
+}
+
 export class BybitClient {
   constructor({
     base = "https://api.bybit.com",
@@ -33,7 +41,7 @@ export class BybitClient {
       }
     }
   }
-  async symbols(turnover, signal) {
+  async symbols(turnover, signal, market = "all") {
     let cursor = "",
       instruments = [];
     const seen = new Set();
@@ -61,6 +69,7 @@ export class BybitClient {
         instruments
           .filter(
             (i) =>
+              matchesMarket(i.symbolType, market) &&
               i.status === "Trading" &&
               i.contractType === "LinearPerpetual" &&
               i.quoteCoin === "USDT" &&

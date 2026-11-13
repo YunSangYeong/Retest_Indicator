@@ -142,7 +142,7 @@ $("settings").onsubmit = async (event) => {
   controller = own;
   const cfg = { ...defaults };
   for (const [k, v] of new FormData(event.target))
-    cfg[k] = ["interval", "direction"].includes(k) ? v : Number(v);
+    cfg[k] = ["interval", "direction", "market"].includes(k) ? v : Number(v);
   results = [];
   render();
   $("scan").disabled = true;
@@ -157,7 +157,7 @@ $("settings").onsubmit = async (event) => {
   });
   if (!$("use-oi").checked) client.oi = async () => null;
   try {
-    const symbols = await client.symbols(cfg.turnover, own.signal);
+    const symbols = await client.symbols(cfg.turnover, own.signal, cfg.market);
     const now = Date.now();
     const output = await scanMarket(symbols, client, cfg, {
       signal: own.signal,
